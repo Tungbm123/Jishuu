@@ -31,7 +31,7 @@ if (isGet()) {
         } else {
             $chuoiWhere .= ' AND ';
         }
-        $chuoiWhere .= "fullname LIKE '%$keyword%' AND email LIKE '%$keyword%' ";
+        $chuoiWhere .= "a.fullname LIKE '%$keyword%' AND a.email LIKE '%$keyword%' ";
     }
 
     if (!empty($group)) {
@@ -40,7 +40,7 @@ if (isGet()) {
         } else {
             $chuoiWhere .= ' AND ';
         }
-        $chuoiWhere .= " group_id = $group ";
+        $chuoiWhere .= " a.group_id = $group ";
     }
 }
 
@@ -61,7 +61,8 @@ $offset = ($page - 1) * $perPage;
 
 
 
-$getDetailUser = getAll("
+$getDetailUser = getAll(
+    "
 SELECT a.id,a.fullname, a.email, a.created_at, b.name
 FROM users a
 INNER JOIN groups b ON a.group_id = b.id $chuoiWhere 
@@ -71,11 +72,17 @@ ORDER BY a.created_at DESC limit $perPage OFFSET $offset"
 $getGroup = getAll("Select * from groups");
 
 //xu ly query
-if(!empty($_SERVER['QUERY_STRING'])){
+if (!empty($_SERVER['QUERY_STRING'])) {
     $queryString = $_SERVER['QUERY_STRING'];
-    $queryString = str_replace('&page='.$page, '', $queryString);
+    $queryString = str_replace('&page=' . $page, '', $queryString);
 }
 
+if ($group > 0 || !empty($keyword)) {
+    $maxData2 = getRows("SELECT a.id
+FROM users a
+ $chuoiWhere");
+ $maxPage = ceil($maxData2 / $perPage);
+}
 
 
 ?>
@@ -170,13 +177,13 @@ if(!empty($_SERVER['QUERY_STRING'])){
                 }
                 ?>
 
-                <?php for($i = $start; $i <= $end; $i++): ?>
-                    <li class="page-item <?php echo ($page == $i) ? 'active': false ?>"><a class="page-link" href="?<?php echo $queryString; ?>&page=<?php echo $i; ?>"><?php echo $i ?></a></li>
+                <?php for ($i = $start; $i <= $end; $i++): ?>
+                    <li class="page-item <?php echo ($page == $i) ? 'active' : false ?>"><a class="page-link" href="?<?php echo $queryString; ?>&page=<?php echo $i; ?>"><?php echo $i ?></a></li>
 
                 <?php endfor; ?>
 
                 <!-- Tinh vi tri ket thuc -->
-                
+
                 <?php
                 if ($end < $maxPage):
                 ?>
