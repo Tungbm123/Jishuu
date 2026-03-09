@@ -36,7 +36,7 @@ layout('sidebar');
             <input id="address" class="form-control" placeholder="Địa chỉ">
         </div>
         <div class="col-6 pb-3">
-            <label for="fullname">Họ và tên</label>
+            <label for="Test">Họ và tên</label>
             <input id="fullname" class="form-control" placeholder="Họ tên">
         </div>
         <div class="col-6 pb-3">
