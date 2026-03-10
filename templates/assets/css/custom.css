@@ -5,3 +5,9 @@
 .add-user{
     padding: 25px 50px;
 }
+
+.error{
+    padding: 5px;
+    font-style: italic;
+    color: red;
+}

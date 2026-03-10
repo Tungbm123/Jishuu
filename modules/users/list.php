@@ -81,10 +81,11 @@ if ($group > 0 || !empty($keyword)) {
     $maxData2 = getRows("SELECT a.id
 FROM users a
  $chuoiWhere");
- $maxPage = ceil($maxData2 / $perPage);
+    $maxPage = ceil($maxData2 / $perPage);
 }
 
-
+$msg = getSessionFlash('msg');
+$msg_type = getSessionFlash('msg_type');
 ?>
 
 
@@ -94,6 +95,9 @@ FROM users a
         <form class="mb-3" action="" method="get">
             <input type="hidden" name="module" value="users">
             <input type="hidden" name="action" value="list">
+            <?php if (!empty($msg) && !empty($msg_type)) {
+                getMsg($msg, $msg_type);
+            }  ?>
             <div class="row">
                 <div class="col-3 form-group">
                     <select name="group" id="" class="form-select form-control">

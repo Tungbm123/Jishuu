@@ -61,11 +61,10 @@ if (isPost()) {
         $data = [
             'fullname' => $filter['fullname'],
             'email'    => $filter['email'],
-            'address' => $filter['address'],
+            'address' => (!empty($filter['address'])? $filter['address']: null),
             'phone' => $filter['phone'],
+            'avatar' => '/templates/uploads/avatar.png',
             'password' => password_hash($filter['password'], PASSWORD_DEFAULT),
-            'active_token' => $active_token,
-            // mac dinh la 1 (student), vi ko cho phep user tu tao duoc tai khoan hoc vien 
             'status' => $filter['status'],
             'group_id' => $filter['group_id'],
             'created_at' => date('Y:m:d H:i:s')
@@ -74,18 +73,9 @@ if (isPost()) {
         $checkInsert = insert('users', $data);
         setSessionFlash('oldData', $filter);
         if ($checkInsert) {
-            $emailTo = $filter['email'];
-            $subject = 'Kích hoạt tài khoản hệ thống Tungbm';
-            $content = 'Chúc mừng bạn đã được tạo tài khoản tại Tungbm. <br>';
-            $content .= 'Để kích hoạt tài khoản, bạn hãy click vào đường link bên dưới: <br>';
-            $content .= _HOST_URL . '/?module=auth&action=active&token=' . $active_token . '<br>';
-            $content .= 'Cảm ơn các bạn đã ủng hộ Tungbm';
-
-            // gui email
-            sendMail($emailTo, $subject, $content);
-
-            setSessionFlash('msg', 'Tạo thành công tài khoản, vui lòng thông báo tới người được tạo để kích hoạt tài khoản');
+            setSessionFlash('msg', 'Tạo thành công tài khoản thành công');
             setSessionFlash('msg_type', 'success');
+            redirect('/?module=users&action=list');
         } else {
             setSessionFlash('msg', 'Đăng ký không thành công, vui lòng thử lại.');
             setSessionFlash('msg_type', 'danger');
@@ -146,7 +136,7 @@ if (isPost()) {
 
             <div class="col-6 pb-3">
                 <label for="password">Password</label>
-                <input id="password" name="password" class="form-control" value="<?php if (!empty($oldData)) {
+                <input id="password" type="password" name="password" class="form-control" value="<?php if (!empty($oldData)) {
                                                                                         echo getOldData($oldData, 'password');
                                                                                     }  ?>" placeholder="Password">
                 <?php if (!empty($errors)) {
