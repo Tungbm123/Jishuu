@@ -8,7 +8,29 @@ if (!defined('_TUNGBM')) {
 if(!isLogin()){
   redirect('?module=auth&action=login');
 }
+
+//Lấy thông tin user
+$token = getSession('token_login');
+if(!empty($token)){
+  $checkTokenLogin = getOnce("select * from token_login where token = '$token'");
+
+  if(!empty($checkTokenLogin)){
+    $userId = $checkTokenLogin['user_id'];
+    $getUserDetail =getOnce("select fullname, avatar from users where id = $userId");
+
+    if(!empty($getUserDetail)){
+      $userName = $getUserDetail['fullname'];
+      $avatarUser = $getUserDetail['avatar'];
+    }
+
+  }
+}
+
+
+
 ?>
+
+
 
 <!doctype html>
 <html lang="en">
@@ -86,26 +108,26 @@ if(!isLogin()){
           <li class="nav-item dropdown user-menu">
             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
               <img
-                src="../../dist/assets/img/user2-160x160.jpg"
+                src="<?php echo _HOST_URL . '/' . (isset($avatarUser) ? $avatarUser : ''); ?>"
                 class="user-image rounded-circle shadow"
                 alt="User Image" />
-              <span class="d-none d-md-inline">Alexander Pierce</span>
+              <span class="d-none d-md-inline"><?php echo isset($userName) ? $userName : ''; ?></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
               <!--begin::User Image-->
               <li class="user-header text-bg-primary">
                 <img
-                  src="../../dist/assets/img/user2-160x160.jpg"
+                  src="<?php echo _HOST_URL . '/' . (isset($avatarUser) ? $avatarUser : ''); ?>"
                   class="rounded-circle shadow"
                   alt="User Image" />
-                <p>
-                  Alexander Pierce - Web Developer
+                <p> 
+                  <?php echo isset($userName)? $userName: false; ?> - Web Developer
                   <small>Member since Nov. 2023</small>
                 </p>
               </li>
               <!--end::User Image-->
               <li class="user-footer">
-                <a href="#" style="width:100%;" class="btn btn-default btn-flat">Profile</a>
+                <a href="?module=users&action=profile" style="width:100%;" class="btn btn-default btn-flat">Profile</a>
               </li>
               <!--begin::Menu Footer-->
               <li class="user-footer">

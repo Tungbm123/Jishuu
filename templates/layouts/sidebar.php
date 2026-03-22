@@ -99,7 +99,7 @@ if (!defined('_TUNGBM')) {
                 </li>
 
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="?module=students" class="nav-link">
                         <i class="nav-icon bi bi-pencil-square"></i>
                         <p>
                             Học viên
