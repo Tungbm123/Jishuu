@@ -58,7 +58,7 @@ if (isPost()) {
     }
     if (empty($errors)) {
         $active_token = sha1(uniqid() . time());
-        $data = [
+        $dataInsert = [
             'fullname' => $filter['fullname'],
             'email'    => $filter['email'],
             'address' => (!empty($filter['address'])? $filter['address']: null),
@@ -70,7 +70,7 @@ if (isPost()) {
             'created_at' => date('Y:m:d H:i:s')
         ];
 
-        $checkInsert = insert('users', $data);
+        $checkInsert = insert('users', $dataInsert);
         setSessionFlash('oldData', $filter);
         if ($checkInsert) {
             setSessionFlash('msg', 'Tạo thành công tài khoản thành công');
@@ -146,7 +146,7 @@ if (isPost()) {
 
             <div class="col-6 pb-3">
                 <label for="address">Địa chỉ</label>
-                <input id="address" class="form-control" placeholder="Địa chỉ">
+                <input name="address" id="address" class="form-control" placeholder="Địa chỉ">
             </div>
             <div class="col-3 pb-3">
                 <label for="group">Phân cấp người dùng</label>

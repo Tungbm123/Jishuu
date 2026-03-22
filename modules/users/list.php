@@ -91,7 +91,7 @@ $msg_type = getSessionFlash('msg_type');
 
 <div class="container  grid-user">
     <div class="container-fluid">
-        <a href="?modules=users&action=add" class="btn btn-success mb-3 mt-3"><i class="fa-solid fa-plus"></i>Thêm mới người dùng</a>
+        <a href="?module=users&action=add" class="btn btn-success mb-3 mt-3"><i class="fa-solid fa-plus"></i>Thêm mới người dùng</a>
         <form class="mb-3" action="" method="get">
             <input type="hidden" name="module" value="users">
             <input type="hidden" name="action" value="list">

@@ -18,12 +18,12 @@ if (!empty($getDetailUser)) {
     if (empty($dataDetailUser)) {
         setSessionFlash('msg', 'Người dùng không tồn tại');
         setSessionFlash('msg_type', 'danger');
-        redirect('?mpdule=users&action=list');
+        redirect('?module=users&action=list');
     }
 } else {
     setSessionFlash('msg', 'Đã có lỗi xảy ra, vui lòng thử lại');
     setSessionFlash('msg_type', 'danger');
-    redirect('?mpdule=users&action=list');
+    redirect('?module=users&action=list');
 }
 
 
@@ -42,21 +42,6 @@ if (isPost()) {
         }
     }
 
-    //validate email
-    if (empty(trim($filter['email']))) {
-        $errors['email']['required'] = 'email ko duoc rong';
-    } else {
-        //check xem dung dinh dang mail, da ton tai trong CSDL hay chua
-        if (!validateEmail(trim($filter['email']))) {
-            $errors['email']['isEmail'] = 'Email ko dung dinh dang';
-        } else {
-            $email = $filter['email'];
-            $checkMail = getRows("select * from users where email = '$email'");
-            if ($checkMail > 0) {
-                $errors['email']['isDuplicate'] = 'Email da ton tai';
-            }
-        }
-    }
 
     //validate phone
     if (empty(trim($filter['phone']))) {
@@ -68,30 +53,54 @@ if (isPost()) {
     }
 
     //validate PW > 6 ki tu
-    if (empty(trim($filter['password']))) {
-        $errors['password']['required'] = 'PW khong duoc de trong';
-    } else {
+    if (!empty(trim($filter['password']))) {
         if (strlen(trim($filter['password'])) < 6) {
             $errors['password']['length'] = 'Mat khau phai lon hon 6 ky tu';
         }
     }
+
+    if ($filter['email'] != $dataDetailUser['email']) {
+
+        //validate email
+        if (empty(trim($filter['email']))) {
+            $errors['email']['required'] = 'email ko duoc rong';
+        } else {
+            //check xem dung dinh dang mail, da ton tai trong CSDL hay chua
+            if (!validateEmail(trim($filter['email']))) {
+                $errors['email']['isEmail'] = 'Email ko dung dinh dang';
+            } else {
+                $email = $filter['email'];
+                $id = $dataDetailUser['id'];
+                $checkMail = getRows("select * from users where email = '$email' AND id != $id");
+                if ($checkMail > 0) {
+                    $errors['email']['isDuplicate'] = 'Email trùng với email khác đã đăng ký rồi';
+                }
+            }
+        }
+    }
+
     if (empty($errors)) {
         $active_token = sha1(uniqid() . time());
-        $data = [
+        $dataUpdate = [
             'fullname' => $filter['fullname'],
             'email'    => $filter['email'],
             'address' => (!empty($filter['address']) ? $filter['address'] : null),
             'phone' => $filter['phone'],
             'avatar' => '/templates/uploads/avatar.png',
-            'password' => password_hash($filter['password'], PASSWORD_DEFAULT),
             'status' => $filter['status'],
             'group_id' => $filter['group_id'],
-            'created_at' => date('Y:m:d H:i:s')
+            'updated_at' => date('Y:m:d H:i:s')
         ];
 
-        $checkInsert = insert('users', $data);
+        if(!empty($filter['password'])){
+            $dataUpdate['password'] = password_hash($filter['password'], PASSWORD_DEFAULT);
+
+        }
+        $condition = "id=" .$userId; 
+
+        $updateStatus = update('users', $dataUpdate, $condition);
         setSessionFlash('oldData', $filter);
-        if ($checkInsert) {
+        if ($updateStatus) {
             setSessionFlash('msg', 'Thay đổi thông tin tài khoản thành công');
             setSessionFlash('msg_type', 'success');
             redirect('/?module=users&action=list');
@@ -105,14 +114,13 @@ if (isPost()) {
         setSessionFlash('msg', 'Vui lòng kiểm tra dữ liệu nhập vào.');
         setSessionFlash('msg_type', 'danger');
     }
-    $msg = getSessionFlash('msg');
-    $msg_type = getSessionFlash('msg_type');
-    $oldData = getSessionFlash('oldData');
-    $errorsArr = getSessionFlash('errors');
 }
-
-
-
+$msg = getSessionFlash('msg');
+$msg_type = getSessionFlash('msg_type');
+if (!empty($dataDetailUser)) {
+    $oldData = $dataDetailUser;
+}
+$errorsArr = getSessionFlash('errors');
 ?>
 
 <div class="container add-user">
@@ -155,9 +163,7 @@ if (isPost()) {
 
             <div class="col-6 pb-3">
                 <label for="password">Password</label>
-                <input id="password" type="password" name="password" class="form-control" value="<?php if (!empty($oldData)) {
-                                                                                                        echo getOldData($oldData, 'password');
-                                                                                                    }  ?>" placeholder="Password">
+                <input id="password" type="password" name="password" class="form-control" value="" placeholder="Password">
                 <?php if (!empty($errors)) {
                     echo formError($errorsArr, 'password');
                 }  ?>
@@ -165,7 +171,9 @@ if (isPost()) {
 
             <div class="col-6 pb-3">
                 <label for="address">Địa chỉ</label>
-                <input id="address" class="form-control" placeholder="Địa chỉ">
+                <input id="address" name="address" class="form-control" placeholder="Địa chỉ" value="<?php if (!empty($oldData)) {
+                                                                                                            echo getOldData($oldData, 'address');
+                                                                                                        }  ?>">
             </div>
             <div class="col-3 pb-3">
                 <label for="group">Phân cấp người dùng</label>
@@ -174,19 +182,24 @@ if (isPost()) {
                     $getGroup = getAll("select * from groups");
                     foreach ($getGroup as $item):
                     ?>
-                        <option value="<?php echo $item['id']; ?>"><?php echo $item['name']; ?></option>
+                        <option value="<?php echo $item['id']; ?>"
+                            <?php echo ($oldData['group_id'] == $item['id'] ? 'selected' : false) ?>>
+                            <?php echo $item['name']; ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div class="col-3 pb-3">
                 <label for="status">Trạng thái TK</label>
                 <select name="status" id="status" class="form-select form-control">
-                    <option value="0">Chưa kích hoạt</option>
-                    <option value="1">Đã kích hoạt</option>
+                    <option value="0" <?php echo ($oldData['status'] == 0 ? 'selected' : false) ?>>Chưa kích hoạt </option>
+                    <option value="1" <?php echo ($oldData['group_id'] == 1 ? 'selected' : false) ?>>Đã kích hoạt</option>
                 </select>
             </div>
         </div>
-        <button type="submit" class="btn btn-success">Xác nhận</button>
+        <button type="submit" class="btn btn-success btn-add">Xác nhận</button>
+        <a type="button" href="?module=users&action=list" class="btn btn-primary btn-add">Back to list</a>
+
     </form>
 </div>
 
